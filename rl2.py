@@ -78,10 +78,12 @@ def take_action(position, action):
 # Manually defined training loop
 def train_q_learning(q_network, optimizer, maze, start_pos, gamma, epsilon, epsilon_decay, epsilon_min, num_episodes):
     episode_rewards = []
+    episode_paths = []  # To store the paths taken by the agent
 
     for episode in range(num_episodes):
         position = start_pos
         total_reward = 0
+        episode_path = [position]
 
         for t in range(max_steps_per_episode):
             state = get_state(maze, position)
@@ -112,27 +114,46 @@ def train_q_learning(q_network, optimizer, maze, start_pos, gamma, epsilon, epsi
             optimizer.step()
 
             position = new_position
+            episode_path.append(position)
 
             if reward == 1:  # Reached the goal
                 break
 
         epsilon = max(epsilon_min, epsilon_decay * epsilon)
         episode_rewards.append(total_reward)
+        episode_paths.append(episode_path)
         print(f"Episode {episode+1}: Total Reward: {total_reward}")
 
     print("Training complete")
-    return episode_rewards
+    return episode_rewards, episode_paths
 
 # Initialize Q-network and optimizer
 q_network = QNetwork(state_size, action_size)
 optimizer = optim.Adam(q_network.parameters(), lr=learning_rate)
 
 # Train the agent
-episode_rewards = train_q_learning(q_network, optimizer, maze, start_pos, gamma, epsilon, epsilon_decay, epsilon_min, num_episodes)
+episode_rewards, episode_paths = train_q_learning(q_network, optimizer, maze, start_pos, gamma, epsilon, epsilon_decay, epsilon_min, num_episodes)
 
 # Plot the rewards to see the learning trend
 plt.plot(episode_rewards)
 plt.xlabel('Episode')
 plt.ylabel('Total Reward')
 plt.title('Total Reward per Episode')
+plt.show()
+
+# Visualize the agent's path through the maze
+plt.figure(figsize=(5, 5))
+plt.imshow(maze, cmap='gray')
+
+for path in episode_paths:
+    path = np.array(path)
+    plt.plot(path[:, 1], path[:, 0], marker='o')
+
+plt.plot(start_pos[1], start_pos[0], marker='o', color='blue', markersize=10, label='Start')
+plt.plot(goal_pos[1], goal_pos[0], marker='o', color='green', markersize=10, label='Goal')
+plt.legend()
+plt.title('Agent Path in the Maze')
+plt.xlim(-0.5, maze.shape[1] - 0.5)
+plt.ylim(maze.shape[0] - 0.5, -0.5)
+plt.gca().invert_yaxis()
 plt.show()
