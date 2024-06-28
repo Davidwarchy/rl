@@ -13,20 +13,28 @@ class SimpleMazeEnv(gym.Env):
         self.action_space = gym.spaces.Discrete(4)  # Up, Down, Left, Right
         self.observation_space = gym.spaces.Discrete(len(maze) * len(maze[0]))  # Total number of states
 
-
-
         # Visualization setup
         self.fig, self.ax = plt.subplots()
         self.ax.set_xticks(np.arange(-.5, len(maze[0]), 1), minor=True)
         self.ax.set_yticks(np.arange(-.5, len(maze), 1), minor=True)
         self.ax.grid(which='minor', color='gray', linestyle='-', linewidth=1)
-        self.agent_marker = self.ax.scatter(*self.agent_plot_position, color='red', marker='o', s=100)
-        self.goal_marker = self.ax.scatter(*self.goal_plot_position, color='green', marker='*', s=100)
+        self.ax.invert_yaxis()  # Flip the y-axis
+        
+        self.agent_marker = self.ax.scatter(*self._maze_to_plot(self.agent_position), color='red', marker='o', s=100)
+        self.goal_marker = self.ax.scatter(*self._maze_to_plot(self.goal_position), color='green', marker='*', s=100)
         self.ax.imshow(self.maze, cmap='binary', interpolation='nearest')
+
+    def _maze_to_plot(self, position):
+        """Convert maze coordinates to plot coordinates."""
+        return (position[1], position[0])
+
+    def _plot_to_maze(self, position):
+        """Convert plot coordinates to maze coordinates."""
+        return (position[1], position[0])
 
     def reset(self):
         self.agent_position = (0, 0)  # Reset agent to top-left corner
-        self.agent_marker.set_offsets(self.agent_position)
+        self.agent_marker.set_offsets(self._maze_to_plot(self.agent_position))
         return self.agent_position
 
     def step(self, action):
@@ -48,7 +56,7 @@ class SimpleMazeEnv(gym.Env):
             0 <= next_position[1] < len(self.maze[0]) and
             self.maze[next_position[0]][next_position[1]] != 1):  # 1 represents a wall
             self.agent_position = next_position
-            self.agent_marker.set_offsets(self.agent_position)
+            self.agent_marker.set_offsets(self._maze_to_plot(self.agent_position))
         else:
             # Penalize for hitting a wall or going out of bounds
             return self.agent_position, -1.0, False, {}
@@ -73,3 +81,32 @@ class SimpleMazeEnv(gym.Env):
     def close(self):
         plt.close(self.fig)
 
+    def update_agent_position(self, new_position):
+        self.agent_position = new_position
+        self.agent_plot_position = self._maze_to_plot(self.agent_position)
+        self.agent_marker.set_offsets(self.agent_plot_position)
+        self.fig.canvas.draw()
+
+# Example usage:
+maze = [
+    [0, 1, 0, 0, 0],
+    [0, 1, 0, 1, 0],
+    [0, 0, 0, 1, 0],
+    [1, 1, 0, 1, 0],
+    [0, 0, 0, 1, 0]
+]
+
+
+if __name__ == "__main__":
+    
+    env = SimpleMazeEnv(maze)
+    env.reset()
+    env.render()
+
+    # Example of changing coordinates
+    new_positions = [(0, 1), (1, 1), (2, 1), (2, 2), (3, 2), (4, 2), (4, 3), (4, 4)]
+    for pos in new_positions:
+        env.update_agent_position(pos)
+        plt.pause(2)  # Pause to visualize the change
+
+    x = input()
