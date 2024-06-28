@@ -13,13 +13,15 @@ class SimpleMazeEnv(gym.Env):
         self.action_space = gym.spaces.Discrete(4)  # Up, Down, Left, Right
         self.observation_space = gym.spaces.Discrete(len(maze) * len(maze[0]))  # Total number of states
 
+
+
         # Visualization setup
         self.fig, self.ax = plt.subplots()
         self.ax.set_xticks(np.arange(-.5, len(maze[0]), 1), minor=True)
         self.ax.set_yticks(np.arange(-.5, len(maze), 1), minor=True)
         self.ax.grid(which='minor', color='gray', linestyle='-', linewidth=1)
-        self.agent_marker = self.ax.scatter(*self.agent_position, color='red', marker='o', s=100)
-        self.goal_marker = self.ax.scatter(*self.goal_position, color='green', marker='*', s=100)
+        self.agent_marker = self.ax.scatter(*self.agent_plot_position, color='red', marker='o', s=100)
+        self.goal_marker = self.ax.scatter(*self.goal_plot_position, color='green', marker='*', s=100)
         self.ax.imshow(self.maze, cmap='binary', interpolation='nearest')
 
     def reset(self):
@@ -31,13 +33,13 @@ class SimpleMazeEnv(gym.Env):
         x, y = self.agent_position
 
         if action == 0:  # Up
-            next_position = (x, y - 1)
-        elif action == 1:  # Down
-            next_position = (x, y + 1)
-        elif action == 2:  # Left
             next_position = (x - 1, y)
-        elif action == 3:  # Right
+        elif action == 1:  # Down
             next_position = (x + 1, y)
+        elif action == 2:  # Left
+            next_position = (x, y - 1)
+        elif action == 3:  # Right
+            next_position = (x, y + 1)
         else:
             raise ValueError("Invalid action")
 
@@ -70,3 +72,4 @@ class SimpleMazeEnv(gym.Env):
 
     def close(self):
         plt.close(self.fig)
+
