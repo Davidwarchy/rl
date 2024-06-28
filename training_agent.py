@@ -2,6 +2,7 @@ import gym
 import numpy as np
 from maze_env import SimpleMazeEnv
 from time import sleep
+import json
 
 # Q-learning parameters
 alpha = 0.1  # Learning rate
@@ -27,11 +28,17 @@ def state_to_index(state):
     index = x * len(maze[0]) + y
     return index
 
+# Training parameters
+num_episodes = 100
+episode_iterations = []  # To store number of iterations per episode
+save_interval = 10  # Save data every 10 episodes
+
 # Training the agent
-for episode in range(100):
+for episode in range(num_episodes):
     state = env.reset()
     state_index = state_to_index(state)
     done = False
+    iterations = 0
 
     while not done:
         # Choose action using epsilon-greedy policy
@@ -39,21 +46,31 @@ for episode in range(100):
         if randy < epsilon:
             action = env.action_space.sample()  # Exploration
         else:
-            action = np.argmax(q_table[state_index]) # Exploitation: take action with highest expected payoff in current state
+            action = np.argmax(q_table[state_index])  # Exploitation
 
         next_state, reward, done, _ = env.step(action)
         next_state_index = state_to_index(next_state)
 
-        print(next_state)
-        
         # Q-table update using Bellman equation
         q_table[state_index][action] += alpha * (reward + gamma * np.max(q_table[next_state_index]) - q_table[state_index][action])
         state_index = next_state_index
 
-        # Visualize the maze
-        env.render()
-        # sleep(0.1)  # Adjust the speed of visualization
+        iterations += 1
 
-    print(f"Episode {episode + 1} completed.")
+    episode_iterations.append(iterations)
+    print(f"Episode {episode + 1} completed. Iterations: {iterations}")
 
-# After training, you can save a video or visualize the agent's path
+    # Periodically save Q-table and episode iteration data
+    if (episode + 1) % save_interval == 0 or episode == num_episodes - 1:
+        data = {
+            'q_table': q_table.tolist(),
+            'episode_iterations': episode_iterations
+        }
+
+        file_path = f'q_learning_data_episode_{episode + 1}.json'
+        with open(file_path, 'w') as f:
+            json.dump(data, f)
+
+        print(f"Q-table and episode iteration data saved to {file_path}")
+
+print("Training complete.")
