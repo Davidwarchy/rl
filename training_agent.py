@@ -1,8 +1,8 @@
 import gym
 import numpy as np
 from maze_env import SimpleMazeEnv
-from time import sleep
 import json
+import os
 
 # Q-learning parameters
 alpha = 0.1  # Learning rate
@@ -31,7 +31,7 @@ def state_to_index(state):
 # Training parameters
 num_episodes = 100
 episode_iterations = []  # To store number of iterations per episode
-save_interval = 10  # Save data every 10 episodes
+q_table_history = []  # To store Q-table after each episode
 
 # Training the agent
 for episode in range(num_episodes):
@@ -58,19 +58,21 @@ for episode in range(num_episodes):
         iterations += 1
 
     episode_iterations.append(iterations)
+    q_table_history.append(q_table.copy())  # Save a copy of Q-table after each episode
     print(f"Episode {episode + 1} completed. Iterations: {iterations}")
 
-    # Periodically save Q-table and episode iteration data
-    if (episode + 1) % save_interval == 0 or episode == num_episodes - 1:
-        data = {
-            'q_table': q_table.tolist(),
-            'episode_iterations': episode_iterations
-        }
+# Save Q-table history and episode iteration data to a single JSON file
+output_data = {
+    'q_table_history': [q.tolist() for q in q_table_history],  # Convert each Q-table to list for JSON serialization
+    'episode_iterations': episode_iterations
+}
 
-        file_path = f'q_learning_data_episode_{episode + 1}.json'
-        with open(file_path, 'w') as f:
-            json.dump(data, f)
+output_folder = 'output'  # Output folder for saving data
+os.makedirs(output_folder, exist_ok=True)
+file_path = os.path.join(output_folder, 'q_learning_data.json')
 
-        print(f"Q-table and episode iteration data saved to {file_path}")
+with open(file_path, 'w') as f:
+    json.dump(output_data, f)
 
+print(f"Q-table history and episode iteration data saved to {file_path}")
 print("Training complete.")
