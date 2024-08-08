@@ -87,18 +87,17 @@ class SimpleMazeEnv(gym.Env):
         self.agent_marker.set_offsets(self.agent_plot_position)
         self.fig.canvas.draw()
 
-# Example usage:
-maze = [
-    [0, 1, 0, 0, 0],
-    [0, 1, 0, 1, 0],
-    [0, 0, 0, 1, 0],
-    [1, 1, 0, 1, 0],
-    [0, 0, 0, 1, 0]
-]
-
-
 if __name__ == "__main__":
     
+    # Example usage:
+    maze = [
+        [0, 1, 0, 0, 0],
+        [0, 1, 0, 1, 0],
+        [0, 0, 0, 1, 0],
+        [1, 1, 0, 1, 0],
+        [0, 0, 0, 1, 0]
+    ]
+
     env = SimpleMazeEnv(maze)
     env.reset()
     env.render()
@@ -107,6 +106,6 @@ if __name__ == "__main__":
     new_positions = [(0, 1), (1, 1), (2, 1), (2, 2), (3, 2), (4, 2), (4, 3), (4, 4)]
     for pos in new_positions:
         env.update_agent_position(pos)
-        plt.pause(2)  # Pause to visualize the change
+        plt.pause(.5)  # Pause to visualize the change
 
     x = input()
