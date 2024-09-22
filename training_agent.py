@@ -7,7 +7,7 @@ import os
 # Q-learning parameters
 alpha = 0.1  # Learning rate
 gamma = 0.9  # Discount factor
-epsilon = 0.9  # Exploration-exploitation trade-off
+epsilon = 0.5  # Exploration-exploitation trade-off
 
 # Create a simple maze environment
 maze = [
