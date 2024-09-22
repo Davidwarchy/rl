@@ -29,7 +29,7 @@ def state_to_index(state):
     return index
 
 # Training parameters
-num_episodes = 100
+num_episodes = 1000
 episode_iterations = []  # To store number of iterations per episode
 q_table_history = []  # To store Q-table after each episode
 
